@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/sarthakjha/Formy/internal/api"
+	"github.com/sarthakjha/Formy/internal/respository"
 )
 
 
@@ -20,7 +21,12 @@ func main()  {
 	}
 
 	r := mux.NewRouter()
-	api.SetupRoutes(r)
+	mongoClient,err := respository.ConnectDataBase("mongodb://localhost:27017")
+	if err != nil {
+		log.Fatal("DATABASE CONNECTION FAILED")
+	}
+	log.Println("DATABASE CONNECTION SUCCESSFUL")
+	api.SetupRoutes(r, mongoClient)
 	server := http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%s", "5001"),
 		Handler: r,
