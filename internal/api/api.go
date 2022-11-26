@@ -1,6 +1,8 @@
 package api
 
 import (
+	"os"
+
 	"github.com/gorilla/mux"
 	"github.com/sarthakjha/Formy/internal/handler"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -9,11 +11,18 @@ import (
 func SetupRoutes(router *mux.Router, client *mongo.Client){
 	// all api routes go here
 	 
-	handler := handler.Handler{}
-	handler.Db = client
+	handler := handler.Handler{
+		Db: client,
+	}
 	// create handler obj here then pass it through the routes
 	// fill handler struct here, with values from main through args
-	router.HandleFunc("/",handler.Greet)
+
+	subRouter := router.PathPrefix("/api/"+os.Getenv("API_VERSION")).Subrouter()
+
+
+	subRouter.HandleFunc("/",handler.Greet)
+	subRouter.HandleFunc("/create-form",handler.CreateForm)
+	subRouter.HandleFunc("/submit-response",handler.CreateResponse)
 	
 	/*
 		1. create form route (admin) (mininal traffic)

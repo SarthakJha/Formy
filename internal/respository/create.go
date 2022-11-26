@@ -11,7 +11,7 @@ import (
 )
 
 
-func AddFormToDatabase(client *mongo.Client, questions []model.Question){
+func AddFormToDatabase(client *mongo.Client, questions []model.Question)error{
 
 	formId := primitive.NewObjectID()
 	questionIds := []primitive.ObjectID{}
@@ -30,8 +30,10 @@ func AddFormToDatabase(client *mongo.Client, questions []model.Question){
 	defer cancel()
 	_, err := client.Database(os.Getenv("DATABASE_NAME")).Collection(os.Getenv("FORM_COLLECTION")).InsertOne(ctx, form)
 	if err!=nil{
-		log.Println("ERROR SAVING FORM")
+		log.Println("ERROR SAVING FORM"+err.Error())
+		return err
 	}
+	return nil
 }
 
 func addQuestionToDatabse(client *mongo.Client, question model.Question){
@@ -39,10 +41,17 @@ func addQuestionToDatabse(client *mongo.Client, question model.Question){
 	defer cancel()
 	_, err := client.Database(os.Getenv("DATABASE_NAME")).Collection(os.Getenv("QUESTION_COLLECTION")).InsertOne(ctx, question)
 	if err!=nil{
-		log.Println("ERROR SAVING QUESTION")
+		log.Println("ERROR SAVING QUESTION: "+err.Error())
 	}
 }
 
-func AddResponseToDatabase(client *mongo.Client){
-	
+func AddResponseToDatabase(client *mongo.Client, response model.Response)error{
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	_, err := client.Database(os.Getenv("DATABASE_NAME")).Collection(os.Getenv("RESPONSE_COLLECTION")).InsertOne(ctx, response)	
+	if err!=nil{
+		log.Println("ERROR SAVING RESPONSE: "+err.Error())
+		return err
+	}
+	return nil
 }
