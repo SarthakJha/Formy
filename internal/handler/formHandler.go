@@ -16,15 +16,16 @@ import (
 type question struct{
 	Question string `json:"question_string"`
 }
-type questionRequest struct {
+type formRequest struct {
 	QuestionString []question `json:"questions"`
 	IsGmailNotificationEnabled bool `json:"is_gmail_notif_enabled" bson:"is_gmail_notif_enabled"`
 	IsSheetEnabled bool `json:"is_sheet_enabled" bson:"is_sheet_enabled"`
+	Title string `json:"title" bson:"title"`
 }
 
 func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
-	questions := questionRequest{}
-	err := json.NewDecoder(r.Body).Decode(&questions)
+	formSubmission := formRequest{}
+	err := json.NewDecoder(r.Body).Decode(&formSubmission)
 	if err!=nil{
 		log.Println("ERROR: cant decode questions")
 		w.WriteHeader(500)
@@ -32,18 +33,22 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	questionObject := []model.Question{}
-	for i := 0; i < len(questions.QuestionString); i++ {
+	for i := 0; i < len(formSubmission.QuestionString); i++ {
 		question := model.Question{
 			QuestionId: primitive.NewObjectID(),
-			QuestionString: questions.QuestionString[i].Question,
+			QuestionString: formSubmission.QuestionString[i].Question,
 		}
 		questionObject = append(questionObject,question)
 	}
 	
 	// create spreadsheet here if option is checked and set columns
 	sheetLink := ""
-	if questions.IsSheetEnabled {
-		s := handler.SheetsClient.Spreadsheets.Create(&sheets.Spreadsheet{})
+	if formSubmission.IsSheetEnabled {
+		s := handler.SheetsClient.Spreadsheets.Create(&sheets.Spreadsheet{
+			Properties: &sheets.SpreadsheetProperties{
+				Title: formSubmission.Title,
+			},
+		})
 		sheet,err := s.Do() 
 
 		// handling spreadsheet's permission
@@ -60,7 +65,7 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 		sheetLink = sheet.SpreadsheetUrl
 	}
 	
-	err=repository.AddFormToDatabase(handler.Db,questionObject, questions.IsSheetEnabled,questions.IsGmailNotificationEnabled, sheetLink)
+	err=repository.AddFormToDatabase(handler.Db,questionObject, formSubmission.IsSheetEnabled,formSubmission.IsGmailNotificationEnabled, sheetLink)
 	if err!=nil{
 		log.Println("ERROR: error saving questions")
 		w.WriteHeader(500)
