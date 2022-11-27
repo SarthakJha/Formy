@@ -4,7 +4,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 
 type Response struct{
-	ResponseId primitive.ObjectID
-	QuestionId primitive.ObjectID 
-	ResponseText string
+	ResponseId primitive.ObjectID `json:"id" bson:"_id"`
+	QuestionId primitive.ObjectID `json:"question_id" bson:"question_id"`
+	ResponseText string	`json:"response_string" bson:"response_string"`
 }

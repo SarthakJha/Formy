@@ -20,7 +20,6 @@ func SetupRoutes(router *mux.Router, client *mongo.Client){
 	subRouter := router.PathPrefix("/api/"+os.Getenv("API_VERSION")).Subrouter()
 
 
-	subRouter.HandleFunc("/",handler.Greet)
 	subRouter.HandleFunc("/create-form",handler.CreateForm)
 	subRouter.HandleFunc("/submit-response",handler.CreateResponse)
 	

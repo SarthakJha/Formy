@@ -16,7 +16,7 @@ import (
 
 
 func main()  {
-	if err := godotenv.Load("prod.env"); err!= nil {
+	if err := godotenv.Load("test.env"); err!= nil {
 		log.Fatalln(err.Error())
 	}
 
