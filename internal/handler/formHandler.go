@@ -61,7 +61,19 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 		if err!=nil{
 			log.Println("ERROR: ", err.Error())
 		}
-		// handler.SheetsClient.Spreadsheets.Values.a
+		questionRows := make([][]interface{}, len(formSubmission.QuestionString))
+		for i := 0; i < len(formSubmission.QuestionString); i++ {
+			questionRows[0] = append(questionRows[0], formSubmission.QuestionString[i].Question)
+		}
+
+		appendCall := handler.SheetsClient.Spreadsheets.Values.Update(sheet.SpreadsheetId,"Sheet1",&sheets.ValueRange{
+			MajorDimension: "ROWS",
+			Values: questionRows,
+		}).ValueInputOption("RAW")
+		_,err =appendCall.Do()
+		if err!=nil{
+			log.Println("ERROR: ", err.Error())
+		}
 		sheetLink = sheet.SpreadsheetUrl
 	}
 	
