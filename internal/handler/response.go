@@ -18,6 +18,7 @@ type formResponseRequest struct{
 type res struct{
 	ResponseString string `json:"response_string"`
 	QuestionId string `json:"question_id"`
+	Form model.Form `json:"form"`
 }
 
 func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  {
@@ -25,7 +26,8 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 	{
 		response:[{
 			response_string: "yes",
-			question_id: objectID
+			question_id: objectID,
+			form: {}
 		}]
 	}
 	*/
@@ -38,18 +40,21 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 		return
 	}
 
+
 	for i := 0; i < len(res.Response); i++ {
 		questionObjectId,err:= primitive.ObjectIDFromHex(res.Response[i].QuestionId)
-	if err!=nil{
-		log.Println("ERROR: issue with objectID conversion")
-		w.WriteHeader(500)
-		fmt.Fprint(w,"internal error")
-		return
-	}
+
+		if err!=nil{
+			log.Println("ERROR: issue with objectID conversion")
+			w.WriteHeader(500)
+			fmt.Fprint(w,"internal error")
+			return
+		}
 		responseObject := model.Response{
 			QuestionId: questionObjectId,
 			ResponseId: primitive.NewObjectID(),
 			ResponseText: res.Response[i].ResponseString,
+			Form: res.Response[i].Form,
 		}
 		err = respository.AddResponseToDatabase(handler.Db,responseObject)
 		if err!=nil{

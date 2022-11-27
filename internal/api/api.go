@@ -3,16 +3,18 @@ package api
 import (
 	"os"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/sarthakjha/Formy/internal/handler"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func SetupRoutes(router *mux.Router, client *mongo.Client){
+func SetupRoutes(router *mux.Router, dbClient *mongo.Client, queueClient *redis.Client){
 	// all api routes go here
 	 
 	handler := handler.Handler{
-		Db: client,
+		Db: dbClient,
+		Queue: queueClient,
 	}
 	// create handler obj here then pass it through the routes
 	// fill handler struct here, with values from main through args

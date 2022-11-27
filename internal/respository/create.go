@@ -11,7 +11,7 @@ import (
 )
 
 
-func AddFormToDatabase(client *mongo.Client, questions []model.Question)error{
+func AddFormToDatabase(client *mongo.Client, questions []model.Question, isSheetEnabled,isGmailNotifEnabled bool)error{
 
 	formId := primitive.NewObjectID()
 	questionIds := []primitive.ObjectID{}
@@ -25,6 +25,8 @@ func AddFormToDatabase(client *mongo.Client, questions []model.Question)error{
 	form := model.Form{
 		FormId: formId,
 		Questions: questionIds,
+		IsGmailNotificationEnabled: isGmailNotifEnabled,
+		IsSheetEnabled: isSheetEnabled,
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

@@ -16,6 +16,8 @@ type question struct{
 }
 type questionRequest struct {
 	QuestionString []question `json:"questions"`
+	IsGmailNotificationEnabled bool `json:"is_gmail_notif_enabled" bson:"is_gmail_notif_enabled"`
+	IsSheetEnabled bool `json:"is_sheet_enabled" bson:"is_sheet_enabled"`
 }
 
 func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
@@ -43,7 +45,7 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 		}
 		questionObject = append(questionObject,question)
 	}
-	err=respository.AddFormToDatabase(handler.Db,questionObject)
+	err=respository.AddFormToDatabase(handler.Db,questionObject, questions.IsSheetEnabled,questions.IsGmailNotificationEnabled)
 	if err!=nil{
 		log.Println("ERROR: error saving questions")
 		w.WriteHeader(500)
