@@ -26,11 +26,12 @@ func main()  {
 	mongoClient,err := repository.ConnectDataBase("mongodb://localhost:27017")
 	redisClient := queue.ConnectQueue("localhost:6379")
 	sheetsClient,err:= googleSheets.ConnectToGoogleServices()
+	driveClient,err:= googleSheets.ConnectToDrive()
 	if err != nil {
 		log.Fatal("DATABASE CONNECTION FAILED")
 	}
 	log.Println("DATABASE CONNECTION SUCCESSFUL")
-	api.SetupRoutes(r, mongoClient, redisClient, sheetsClient)
+	api.SetupRoutes(r, mongoClient, redisClient, sheetsClient, driveClient)
 	server := http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%s", "5001"),
 		Handler: r,

@@ -9,6 +9,7 @@ import (
 	"github.com/sarthakjha/Formy/internal/model"
 	"github.com/sarthakjha/Formy/internal/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/api/drive/v2"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -22,14 +23,6 @@ type questionRequest struct {
 }
 
 func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
-	/**
-		{
-			questions: [{
-				question_string: "lalalal?"
-			}]
-		}
-	*/
-	
 	questions := questionRequest{}
 	err := json.NewDecoder(r.Body).Decode(&questions)
 	if err!=nil{
@@ -46,11 +39,20 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 		}
 		questionObject = append(questionObject,question)
 	}
+	
 	// create spreadsheet here if option is checked and set columns
 	sheetLink := ""
 	if questions.IsSheetEnabled {
 		s := handler.SheetsClient.Spreadsheets.Create(&sheets.Spreadsheet{})
 		sheet,err := s.Do() 
+
+		// handling spreadsheet's permission
+		filePermission := &drive.Permission{
+			Type: "anyone",
+			Role: "writer",
+		}
+		d := handler.DriveClient.Permissions.Insert(sheet.SpreadsheetId,filePermission)
+		_,err = d.Do()
 		if err!=nil{
 			log.Println("ERROR: ", err.Error())
 		}
