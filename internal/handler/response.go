@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/sarthakjha/Formy/internal/model"
+	"github.com/sarthakjha/Formy/internal/queue"
 	"github.com/sarthakjha/Formy/internal/respository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -57,6 +58,17 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 			Form: res.Response[i].Form,
 		}
 		err = respository.AddResponseToDatabase(handler.Db,responseObject)
+
+		// handle publishing of messages
+		if responseObject.Form.IsGmailNotificationEnabled {
+			queue.PublishResponseForEmailNotif(responseObject,handler.Queue)
+			log.Println("message published")
+		}
+		if responseObject.Form.IsSheetEnabled {
+			queue.PublishResponseForGoogleSheet(responseObject,handler.Queue)
+			log.Println("message published")
+		}
+
 		if err!=nil{
 			log.Println("ERROR: cant save response")
 			w.WriteHeader(500)

@@ -19,7 +19,7 @@ func main(){
 	redisClient := queue.ConnectQueue("localhost:6379")
 	ctx,cancel := context.WithCancel(context.Background())
 	defer cancel()
-	subs := redisClient.Subscribe(ctx, string(queue.SHEETS))
+	subs := redisClient.Subscribe(ctx, string(queue.EMAIL_NOTIF))
 
 	resp := make(chan model.Response)
 
@@ -32,6 +32,7 @@ func main(){
 	}()
 
 	for{
+		fmt.Println("reciecving start..")
 		msg,err := subs.ReceiveMessage(ctx)
 		if err !=nil{
 			log.Fatalln("ERROR: ", err.Error())

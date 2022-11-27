@@ -48,6 +48,7 @@ func main()  {
 
 	// graceful shutdown
 	ctx,cancel := context.WithCancel(context.Background())
+	defer redisClient.Close()
 	defer server.Shutdown(ctx)
 	defer cancel()
 
