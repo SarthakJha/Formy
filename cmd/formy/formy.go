@@ -11,24 +11,26 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/sarthakjha/Formy/internal/api"
+	"github.com/sarthakjha/Formy/internal/googleSheets"
 	"github.com/sarthakjha/Formy/internal/queue"
 	"github.com/sarthakjha/Formy/internal/repository"
 )
 
 
 func main()  {
-	if err := godotenv.Load("test.env"); err!= nil {
+	if err := godotenv.Load("prod.env"); err!= nil {
 		log.Fatalln(err.Error())
 	}
 
 	r := mux.NewRouter()
 	mongoClient,err := repository.ConnectDataBase("mongodb://localhost:27017")
 	redisClient := queue.ConnectQueue("localhost:6379")
+	sheetsClient,err:= googleSheets.ConnectToGoogleServices()
 	if err != nil {
 		log.Fatal("DATABASE CONNECTION FAILED")
 	}
 	log.Println("DATABASE CONNECTION SUCCESSFUL")
-	api.SetupRoutes(r, mongoClient, redisClient)
+	api.SetupRoutes(r, mongoClient, redisClient, sheetsClient)
 	server := http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%s", "5001"),
 		Handler: r,

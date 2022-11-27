@@ -7,14 +7,16 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sarthakjha/Formy/internal/handler"
 	"go.mongodb.org/mongo-driver/mongo"
+	"google.golang.org/api/sheets/v4"
 )
 
-func SetupRoutes(router *mux.Router, dbClient *mongo.Client, queueClient *redis.Client){
+func SetupRoutes(router *mux.Router, dbClient *mongo.Client, queueClient *redis.Client, sheetsClient *sheets.Service){
 	// all api routes go here
 	 
 	handler := handler.Handler{
 		Db: dbClient,
 		Queue: queueClient,
+		SheetsClient: sheetsClient,
 	}
 	// create handler obj here then pass it through the routes
 	// fill handler struct here, with values from main through args

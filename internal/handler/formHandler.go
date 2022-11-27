@@ -9,6 +9,7 @@ import (
 	"github.com/sarthakjha/Formy/internal/model"
 	"github.com/sarthakjha/Formy/internal/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/api/sheets/v4"
 )
 
 type question struct{
@@ -45,7 +46,19 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 		}
 		questionObject = append(questionObject,question)
 	}
-	err=repository.AddFormToDatabase(handler.Db,questionObject, questions.IsSheetEnabled,questions.IsGmailNotificationEnabled)
+	// create spreadsheet here if option is checked and set columns
+	sheetLink := ""
+	if questions.IsSheetEnabled {
+		s := handler.SheetsClient.Spreadsheets.Create(&sheets.Spreadsheet{})
+		sheet,err := s.Do() 
+		if err!=nil{
+			log.Println("ERROR: ", err.Error())
+		}
+		// handler.SheetsClient.Spreadsheets.Values.a
+		sheetLink = sheet.SpreadsheetUrl
+	}
+	
+	err=repository.AddFormToDatabase(handler.Db,questionObject, questions.IsSheetEnabled,questions.IsGmailNotificationEnabled, sheetLink)
 	if err!=nil{
 		log.Println("ERROR: error saving questions")
 		w.WriteHeader(500)
