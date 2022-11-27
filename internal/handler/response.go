@@ -8,7 +8,7 @@ import (
 
 	"github.com/sarthakjha/Formy/internal/model"
 	"github.com/sarthakjha/Formy/internal/queue"
-	"github.com/sarthakjha/Formy/internal/respository"
+	"github.com/sarthakjha/Formy/internal/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -57,7 +57,7 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 			ResponseText: res.Response[i].ResponseString,
 			Form: res.Response[i].Form,
 		}
-		err = respository.AddResponseToDatabase(handler.Db,responseObject)
+		err = repository.AddResponseToDatabase(handler.Db,responseObject)
 
 		// handle publishing of messages
 		if responseObject.Form.IsGmailNotificationEnabled {

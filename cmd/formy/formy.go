@@ -12,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sarthakjha/Formy/internal/api"
 	"github.com/sarthakjha/Formy/internal/queue"
-	"github.com/sarthakjha/Formy/internal/respository"
+	"github.com/sarthakjha/Formy/internal/repository"
 )
 
 
@@ -22,7 +22,7 @@ func main()  {
 	}
 
 	r := mux.NewRouter()
-	mongoClient,err := respository.ConnectDataBase("mongodb://localhost:27017")
+	mongoClient,err := repository.ConnectDataBase("mongodb://localhost:27017")
 	redisClient := queue.ConnectQueue("localhost:6379")
 	if err != nil {
 		log.Fatal("DATABASE CONNECTION FAILED")

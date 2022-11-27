@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/sarthakjha/Formy/internal/model"
-	"github.com/sarthakjha/Formy/internal/respository"
+	"github.com/sarthakjha/Formy/internal/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -45,7 +45,7 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 		}
 		questionObject = append(questionObject,question)
 	}
-	err=respository.AddFormToDatabase(handler.Db,questionObject, questions.IsSheetEnabled,questions.IsGmailNotificationEnabled)
+	err=repository.AddFormToDatabase(handler.Db,questionObject, questions.IsSheetEnabled,questions.IsGmailNotificationEnabled)
 	if err!=nil{
 		log.Println("ERROR: error saving questions")
 		w.WriteHeader(500)
