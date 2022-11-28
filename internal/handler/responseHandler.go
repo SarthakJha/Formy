@@ -18,20 +18,11 @@ type formResponseRequest struct{
 
 type res struct{
 	ResponseString string `json:"response_string"`
-	QuestionId string `json:"question_id"`
+	Question model.Question `json:"question_id"`
 	Form model.Form `json:"form"`
 }
-
 func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  {
-	/*
-	{
-		response:[{
-			response_string: "yes",
-			question_id: objectID,
-			form: {}
-		}]
-	}
-	*/
+	
 	res := formResponseRequest{}
 	err:=json.NewDecoder(r.Body).Decode(&res)
 	if err!=nil{
@@ -43,8 +34,6 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 	responseArr := []model.Response{}
 
 	for i := 0; i < len(res.Response); i++ {
-		questionObjectId,err:= primitive.ObjectIDFromHex(res.Response[i].QuestionId)
-
 		if err!=nil{
 			log.Println("ERROR: issue with objectID conversion")
 			w.WriteHeader(500)
@@ -52,15 +41,16 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 			return
 		}
 		responseObject := model.Response{
-			QuestionId: questionObjectId,
+			Question: res.Response[i].Question,
 			ResponseId: primitive.NewObjectID(),
 			ResponseText: res.Response[i].ResponseString,
 			Form: res.Response[i].Form,
 		}
 		err = repository.AddResponseToDatabase(handler.Db,responseObject)
 		responseArr = append(responseArr, responseObject)
+
 		// handle publishing of messages
-		if responseObject.Form.IsGmailNotificationEnabled {
+		if responseObject.Form.IsGmailNotificationEnabled &&  responseObject.Question.IsResponseEmail {
 			queue.PublishResponseForEmailNotif(responseObject,handler.Queue)
 			log.Println("message for email published")
 		}
@@ -76,6 +66,7 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 		queue.PublishResponseForGoogleSheet(responseArr,handler.Queue)
 		log.Println("message for sheet published")
 	}
+	
 	fmt.Fprint(w,"saved your responses")
 
 	

@@ -15,7 +15,7 @@ import (
 )
 
 func main(){
-	if err := godotenv.Load("prod.env"); err!= nil {
+	if err := godotenv.Load("../../prod.env"); err!= nil {
 		log.Fatalln(err.Error())
 	}
 	workerCount,err := strconv.Atoi(os.Getenv("SHEET_WORKER_COUNT")) 

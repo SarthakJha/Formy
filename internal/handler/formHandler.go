@@ -15,6 +15,7 @@ import (
 
 type question struct{
 	Question string `json:"question_string"`
+	IsResponseEmail bool `json:"is_response_email" bson:"is_response_email"`
 }
 type formRequest struct {
 	QuestionString []question `json:"questions"`
@@ -37,6 +38,7 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 		question := model.Question{
 			QuestionId: primitive.NewObjectID(),
 			QuestionString: formSubmission.QuestionString[i].Question,
+			IsResponseEmail: formSubmission.QuestionString[i].IsResponseEmail,
 		}
 		questionObject = append(questionObject,question)
 	}

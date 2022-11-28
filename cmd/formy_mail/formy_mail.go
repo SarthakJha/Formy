@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/smtp"
+	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/sarthakjha/Formy/internal/googleSheets"
 	"github.com/sarthakjha/Formy/internal/model"
 	"github.com/sarthakjha/Formy/internal/queue"
 )
@@ -21,23 +22,39 @@ func main(){
 	ctx,cancel := context.WithCancel(context.Background())
 	defer cancel()
 	subs := redisClient.Subscribe(ctx, string(queue.EMAIL_NOTIF))
-	_,err := googleSheets.ConnectToGoogleServices()
-	if err!=nil{
-		log.Fatalln("ERROR: cant conect to google API")
-	}
+
 	resp := make(chan model.Response)
 
 	go func() {
-		fmt.Println("routine working")
+		log.Println("routine working")
 		// buisness logic
 		for a := range(resp) {
 			fmt.Println(a)
-			
+			from := os.Getenv("EMAIL_ADDR")
+			password := os.Getenv("EMAIL_PASS")
+		
+			toEmailAddress := a.ResponseText
+			to := []string{toEmailAddress}
+		
+			host := "smtp.gmail.com"
+			port := "587"
+			address := host + ":" + port
+		
+			subject := "no-reply Thanks for the submission\n"
+			body := "Thanks!"
+			message := []byte(subject + body)
+		
+			auth := smtp.PlainAuth("", from, password, host)
+		
+			err := smtp.SendMail(address, auth, from, to, message)
+			if err != nil {
+				log.Println("ERROR: ", err.Error() )
+			}
 		}
 	}()
 
 	for{
-		fmt.Println("reciecving start..")
+		log.Println("reciecving start..")
 		msg,err := subs.ReceiveMessage(ctx)
 		if err !=nil{
 			log.Fatalln("ERROR: ", err.Error())
