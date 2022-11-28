@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
+	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/sarthakjha/Formy/internal/googleSheets"
@@ -17,7 +18,10 @@ func main(){
 	if err := godotenv.Load("prod.env"); err!= nil {
 		log.Fatalln(err.Error())
 	}
-
+	workerCount,err := strconv.Atoi(os.Getenv("SHEET_WORKER_COUNT")) 
+	if err != nil{
+		log.Default().Fatalln("ERROR: ",err.Error())
+	}
 	redisClient := queue.ConnectQueue("localhost:6379")
 	ctx,cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -28,26 +32,29 @@ func main(){
 	if err != nil{
 		log.Default().Fatalln("ERROR: connecting to google services")
 	}
-	go func() {
-		fmt.Println("routine working")
-		// buisness logic
-		for a := range(resp) {
-			sheetId :=  a[0].Form.SheetId
-			respsTextArr := make([][]interface{},len(a))
-			for _,j := range(a){
-				respsTextArr[0] = append(respsTextArr[0], j.ResponseText)
+	for i := 0; i < workerCount; i++ {
+		go func() {
+			log.Println("working routine:")
+			// buisness logic
+			for a := range(resp) {
+				sheetId :=  a[0].Form.SheetId
+				respsTextArr := make([][]interface{},len(a))
+				for _,j := range(a){
+					respsTextArr[0] = append(respsTextArr[0], j.ResponseText)
+				}
+				addCall:=conn.Spreadsheets.Values.Append(sheetId, "Sheet1",&sheets.ValueRange{
+					MajorDimension: "ROWS",
+					Values: respsTextArr,
+				}).ValueInputOption("RAW")
+				_,err:=addCall.Do()
+				if err != nil {
+					log.Println("ERROR: ",err.Error())
+				}
+				log.Println("row appended")
 			}
-			addCall:=conn.Spreadsheets.Values.Append(sheetId, "Sheet1",&sheets.ValueRange{
-				MajorDimension: "ROWS",
-				Values: respsTextArr,
-			}).ValueInputOption("RAW")
-			_,err:=addCall.Do()
-			if err != nil {
-				log.Println("ERROR: ",err.Error())
-			}
-			log.Println("row appended")
-		}
-	}()
+		}()
+	}
+
 
 	for{
 		msg,err := subs.ReceiveMessage(ctx)
