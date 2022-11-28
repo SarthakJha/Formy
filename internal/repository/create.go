@@ -11,7 +11,7 @@ import (
 )
 
 
-func AddFormToDatabase(client *mongo.Client, questions []model.Question, isSheetEnabled,isGmailNotifEnabled bool, sheetLink string)error{
+func AddFormToDatabase(client *mongo.Client, questions []model.Question, isSheetEnabled,isGmailNotifEnabled bool, sheetLink, formTitle, sheetId string)error{
 
 	formId := primitive.NewObjectID()
 	questionIds := []primitive.ObjectID{}
@@ -27,6 +27,8 @@ func AddFormToDatabase(client *mongo.Client, questions []model.Question, isSheet
 		Questions: questionIds,
 		IsGmailNotificationEnabled: isGmailNotifEnabled,
 		IsSheetEnabled: isSheetEnabled,
+		Title: formTitle,
+		SheetId: sheetId,
 	}
 
 	if sheetLink != ""{

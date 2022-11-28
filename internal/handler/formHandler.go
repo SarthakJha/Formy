@@ -43,6 +43,7 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 	
 	// create spreadsheet here if option is checked and set columns
 	sheetLink := ""
+	sheetId := ""
 	if formSubmission.IsSheetEnabled {
 		s := handler.SheetsClient.Spreadsheets.Create(&sheets.Spreadsheet{
 			Properties: &sheets.SpreadsheetProperties{
@@ -75,9 +76,10 @@ func (handler *Handler) CreateForm(w http.ResponseWriter, r *http.Request){
 			log.Println("ERROR: ", err.Error())
 		}
 		sheetLink = sheet.SpreadsheetUrl
+		sheetId = sheet.SpreadsheetId
 	}
 	
-	err=repository.AddFormToDatabase(handler.Db,questionObject, formSubmission.IsSheetEnabled,formSubmission.IsGmailNotificationEnabled, sheetLink)
+	err=repository.AddFormToDatabase(handler.Db,questionObject, formSubmission.IsSheetEnabled,formSubmission.IsGmailNotificationEnabled, sheetLink, formSubmission.Title,sheetId)
 	if err!=nil{
 		log.Println("ERROR: error saving questions")
 		w.WriteHeader(500)

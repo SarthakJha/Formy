@@ -40,7 +40,7 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 		fmt.Fprint(w,"internal error")
 		return
 	}
-
+	responseArr := []model.Response{}
 
 	for i := 0; i < len(res.Response); i++ {
 		questionObjectId,err:= primitive.ObjectIDFromHex(res.Response[i].QuestionId)
@@ -58,15 +58,11 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 			Form: res.Response[i].Form,
 		}
 		err = repository.AddResponseToDatabase(handler.Db,responseObject)
-
+		responseArr = append(responseArr, responseObject)
 		// handle publishing of messages
 		if responseObject.Form.IsGmailNotificationEnabled {
 			queue.PublishResponseForEmailNotif(responseObject,handler.Queue)
-			log.Println("message published")
-		}
-		if responseObject.Form.IsSheetEnabled {
-			queue.PublishResponseForGoogleSheet(responseObject,handler.Queue)
-			log.Println("message published")
+			log.Println("message for email published")
 		}
 
 		if err!=nil{
@@ -75,6 +71,10 @@ func (handler *Handler) CreateResponse(w http.ResponseWriter, r *http.Request)  
 			fmt.Fprint(w,"internal error")
 			return
 		}
+	}
+	if res.Response[0].Form.IsSheetEnabled {
+		queue.PublishResponseForGoogleSheet(responseArr,handler.Queue)
+		log.Println("message for sheet published")
 	}
 	fmt.Fprint(w,"saved your responses")
 

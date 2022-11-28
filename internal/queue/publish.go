@@ -10,7 +10,7 @@ import (
 )
 
 
-func PublishResponseForGoogleSheet(res model.Response, queue *redis.Client){
+func PublishResponseForGoogleSheet(res []model.Response, queue *redis.Client){
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	payload,err := json.Marshal(res)
